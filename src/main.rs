@@ -1,3 +1,6 @@
+mod counter;
+
 fn main() {
-    println!("Hello, world!");
+    // variable anonima
+    let _ = counter::start();
 }
