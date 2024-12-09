@@ -1,6 +1,7 @@
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
 use std::time::Duration;
 
+#[derive(Debug)]
 pub enum AppEvent {
     Quit,
     Tick,
