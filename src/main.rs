@@ -1,6 +1,10 @@
-mod counter;
+mod event;
 
 fn main() {
-    // variable anonima
-    let _ = counter::start();
+    let eh = event::EventHandler;
+
+    loop {
+        let res = eh.handle_events(std::time::Duration::from_millis(1000));
+        println!("{:?}", res);
+    }
 }
