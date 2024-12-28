@@ -1,0 +1,8 @@
+monitorizar:
+- CPU
+- GPU
+- RAM
+- Disco
+- procesos
+- red
+- general information
