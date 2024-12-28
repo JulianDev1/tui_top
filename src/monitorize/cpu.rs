@@ -1,31 +1,88 @@
-use sysinfo::{
-    System, Cpu
-};
+use std::{thread, time::Duration};
+use sysinfo::System;
 
-use std::thread;
-use std::time::Duration;
+#[derive(Debug, Clone, PartialEq)]
+pub struct Thread {
+    pub name: String,
+    pub cpu_usage: f32,
+}
+
+impl Thread {
+    pub fn display(&self) -> String {
+        format!("Thread: {} | Cpu usage {:.2}%", self.name, self.cpu_usage)
+    }
+}
+
+pub struct CpuMetrics {
+    pub system: System,
+    pub cpu_brand: String,
+    pub frequency: u64,
+    pub threads: Vec<Thread>,
+}
+
+impl CpuMetrics {
+    pub fn new(system: System) -> Self {
+        let cpu_brand = system
+            .cpus()
+            .first()
+            .map(|cpu| cpu.brand().to_string())
+            .unwrap_or_else(|| "Unknown".to_string());
+
+        let frequency = system
+            .cpus()
+            .first()
+            .map(|cpu| cpu.frequency())
+            .unwrap_or_else(|| 0);
+
+        let threads = system
+            .cpus()
+            .iter()
+            .map(|cpu| Thread {
+                name: cpu.name().to_string(),
+                cpu_usage: cpu.cpu_usage(),
+            })
+            .collect();
+
+        CpuMetrics {
+            system,
+            cpu_brand,
+            frequency,
+            threads,
+        }
+    }
+
+    pub fn update_threads(&mut self) {
+        self.system.refresh_cpu_all();
+        self.threads = self
+            .system
+            .cpus()
+            .iter()
+            .map(|cpu| Thread {
+                name: cpu.name().to_string(),
+                cpu_usage: cpu.cpu_usage(),
+            })
+            .collect();
+    }
+}
 
 pub fn view() {
-    let mut sys = System::new_all();
+    let system = System::new_all();
+    let mut cpus = CpuMetrics::new(system);
+    let mut contador: i128 = 0;
 
-    // get the brand (marca) of processor
-    let cpu_brand = sys.cpus()[0].brand();
+    loop {
+        contador += 1;
+        println!(
+            "Iteración #{} | Procesador: {} | Frecuencia: {} MHz",
+            contador, cpus.cpu_brand, cpus.frequency
+        );
+        cpus.update_threads();
 
-    println!("{}\n", cpu_brand);
-
-    thread::sleep(Duration::from_secs(1)); // Espera 1 segundo
-
-    for _ in 0..3 {
-        // Segunda actualización después del intervalo
-        sys.refresh_all();
-        for cpu in sys.cpus() {
-           println!("cpu: {} | usage: {} | frequency: {} ", 
-               cpu.name(), 
-               cpu.cpu_usage(), 
-               cpu.frequency(),
-           );
+        for i in &cpus.threads {
+            println!("{}", i.display());
         }
-        // le da 1 seg de tiempo al programa antes de la siguiente iteracion
+
         thread::sleep(Duration::from_secs(1));
-    } 
+        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+    }
 }
