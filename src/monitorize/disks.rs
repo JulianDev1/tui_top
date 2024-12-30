@@ -14,7 +14,7 @@ pub struct DisksList {
 
 impl DisksList {
     pub fn new(disks: Disks) -> Self {
-        let disks = Disks::new_with_refreshed_list()
+        let disks = disks
             .iter()
             .map(|disk| LocalDisk {
                 mount_point: disk.mount_point().to_str().unwrap().to_owned(),
@@ -53,8 +53,8 @@ impl DisksList {
 
 pub fn view() {
     let disks = Disks::new_with_refreshed_list();
-    let mut disks_list = DisksList::new(disks);
-
+    let disks_list = DisksList::new(disks);
+    
     for disk in disks_list.disks.iter() {
         println!(
             "Disk: {}{} | Kind: {} | Total Space: {:.2} GB | Available Space: {:.2} GB",
