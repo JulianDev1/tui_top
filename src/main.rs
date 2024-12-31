@@ -1,10 +1,12 @@
-mod event;
+mod monitorize;
 
-fn main() {
-    let eh = event::EventHandler;
+use monitorize::{general_information, process, cpu, memory, disks};
 
-    loop {
-        let res = eh.handle_events(std::time::Duration::from_millis(1000));
-        println!("{:?}", res);
-    }
+fn main () {
+    memory::view();
+    cpu::view();
+    process::view();
+    disks::view();
+    general_information::view();
+
 }
