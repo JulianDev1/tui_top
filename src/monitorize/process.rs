@@ -17,20 +17,19 @@ impl ProcessesList {
 
     pub fn new(system: System) -> Self {
         
-        let processes = system.processes();
-        
-        // ! ERROR: cannot borrow `system` as mutable because it is also borrowed as immutable
+        let processes = system.processes().iter().map(|(_pid, process)| {
+            ProcessInfo {
+                pid: process.pid().as_u32(),
+                name: process.name().to_string_lossy().into_owned(),
+                cpu: process.cpu_usage(),
+                memory: process.memory(),
+                user: process.user_id().map_or_else(|| "Unknown".to_string(), |uid| uid.to_string())
+            }
+        }).collect();
+
         ProcessesList {
             system,
-            processes: processes.iter().map(|(_pid, process)| {
-                ProcessInfo {
-                    pid: process.pid().as_u32(),
-                    name: process.name().to_string_lossy().into_owned(),
-                    cpu: process.cpu_usage(),
-                    memory: process.memory(),
-                    user: process.user_id().map_or_else(|| "Unknown".to_string(), |uid| uid.to_string())
-                }
-            }).collect()
+            processes,
         }
     }
     
@@ -48,7 +47,7 @@ impl ProcessesList {
 
 
 pub fn view() {
-    let mut sys = System::new_all();
+    let sys = System::new_all();
     
     let mut processes_list = ProcessesList::new(sys);
 
